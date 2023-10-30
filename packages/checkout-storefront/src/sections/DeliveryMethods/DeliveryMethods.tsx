@@ -26,9 +26,9 @@ export const DeliveryMethods: React.FC<CommonSectionProps> = ({ collapsed }) => 
   const form = useDeliveryMethodsForm();
   const { updateState } = useCheckoutUpdateState();
   const [, updateShippingLockerId] = useUpdateShippingLockerIdMutation();
-  const [selectedRadio, setSelectedRadio] = useState<string>("");
-  const [selectedInpostData, setSelectedInpostData] = useState<InpostEventData | null>(null);
+  const [, setSelectedRadio] = useState<string>("");
 
+  const [selectedInpostData, setSelectedInpostData] = useState<InpostEventData | null>(null);
   const getSubtitle = ({ min, max }: { min?: number | null; max?: number | null }) => {
     if (!min || !max) {
       return undefined;
@@ -44,12 +44,18 @@ export const DeliveryMethods: React.FC<CommonSectionProps> = ({ collapsed }) => 
     return null;
   }
 
-  const handleRadioChange = (value: string) => {
-    setSelectedRadio(value);
+  const handleRadioChange = (value: string, name: string) => {
+    setSelectedRadio(name);
+    form.setFieldValue("selectedMethodId", value);
   };
+
+  const isInpostSelected =
+    shippingMethods?.find((method) => method.id === form.values.selectedMethodId)?.name ===
+    "Inpost paczkomaty";
 
   const handleInpostDataChange = async (data: InpostEventData | null) => {
     setSelectedInpostData(data);
+
     if (data?.name) {
       await updateShippingLockerId({
         checkoutId: checkout.id,
@@ -80,7 +86,7 @@ export const DeliveryMethods: React.FC<CommonSectionProps> = ({ collapsed }) => 
                   key={id}
                   name="selectedMethodId"
                   value={id}
-                  onRadioChange={handleRadioChange}
+                  onRadioChange={(value: string) => handleRadioChange(value, name)}
                 >
                   <div className="min-h-12 grow flex flex-col justify-center pointer-events-none">
                     <div className="flex flex-row justify-between self-stretch items-center">
@@ -96,7 +102,7 @@ export const DeliveryMethods: React.FC<CommonSectionProps> = ({ collapsed }) => 
             )}
           </SelectBoxGroup>
         )}
-        {selectedRadio === "U2hpcHBpbmdNZXRob2Q6NjQ=" && (
+        {isInpostSelected && (
           <React.Fragment>
             {selectedInpostData?.name != null && (
               <React.Fragment>
