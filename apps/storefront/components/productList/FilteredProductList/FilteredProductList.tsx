@@ -22,8 +22,7 @@ import { FilterPill, FilterPills } from "./FilterPills";
 import { parseQuerySort, serializeQuerySort, UrlSorting } from "./sorting";
 import { SortingDropdown } from "./SortingDropdown";
 import { StockToggle } from "./StockToggle";
-import messages from "@/components/translations";
-import { useIntl } from "react-intl";
+import { getProductCountDescription } from "./utils";
 
 export interface FilteredProductListProps {
   attributeFiltersData: AttributeFilterFragment[];
@@ -41,8 +40,6 @@ export function FilteredProductList({
   collectionIDs,
   categoryIDs,
 }: FilteredProductListProps) {
-  const t = useIntl();
-
   const [queryFilters, setQueryFilters] = useQueryState("filters", {
     parse: parseQueryAttributeFilters,
     serialize: serializeQueryAttributeFilters,
@@ -53,7 +50,8 @@ export function FilteredProductList({
 
   const [sortByQuery, setSortByQuery] = useQueryState("sortBy", {});
 
-  const sortBy = parseQuerySort(sortByQuery);
+  const defaultSortBy: UrlSorting = { field: "DATE", direction: "DESC" };
+  const sortBy = sortByQuery ? parseQuerySort(sortByQuery) : defaultSortBy;
   const setSortBy = (
     value: UrlSorting | undefined | null,
     transitionOptions?: TransitionOptions | undefined
@@ -173,7 +171,7 @@ export function FilteredProductList({
           </div>
           <div className="flex-none text-main-2 text-base">
             <div>
-              {itemsCounter} {t.formatMessage(messages.searchedProducts)}
+              {itemsCounter} {getProductCountDescription(itemsCounter)}
             </div>
           </div>
         </div>
