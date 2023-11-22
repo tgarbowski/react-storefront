@@ -9,14 +9,15 @@ import { useIntl } from "react-intl";
 import { paymentSectionMessages } from "./messages";
 
 export const PaymentMethods: React.FC<PaymentMethodProps> = ({
-  isOnReceiveSelected,
-  isLockerIdSelected,
+  isReceiveSelected,
+  isInpostSelected,
+  selectedLockerId,
 }) => {
   const { checkout } = useCheckout();
   const t = useIntl();
   const [chosenGateway, setChosenGateway] = useState("");
   const existingGateways: string[] = [];
-  if (isOnReceiveSelected) {
+  if (isReceiveSelected) {
     existingGateways.push(COD_GATEWAY);
   } else {
     existingGateways.push(PAYU_GATEWAY);
@@ -47,7 +48,11 @@ export const PaymentMethods: React.FC<PaymentMethodProps> = ({
         </RadioGroup>
       </div>
       {chosenGateway === PAYU_GATEWAY && (
-        <PayuSection checkout={checkout} isLockerIdSelected={isLockerIdSelected} />
+        <PayuSection
+          checkout={checkout}
+          selectedLockerId={selectedLockerId}
+          isInpostSelected={isInpostSelected}
+        />
       )}
       {chosenGateway === COD_GATEWAY && <CodSection checkout={checkout} />}
     </>
