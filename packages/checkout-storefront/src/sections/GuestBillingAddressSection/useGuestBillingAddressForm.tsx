@@ -1,11 +1,11 @@
 import { useAddressFormUrlChange } from "@/checkout-storefront/components/AddressForm/useAddressFormUrlChange";
-import { getAddressFormDataFromAddress } from "@/checkout-storefront/components/AddressForm/utils";
 import { useCheckoutBillingAddressUpdateMutation } from "@/checkout-storefront/graphql";
 import { useFormSubmit } from "@/checkout-storefront/hooks/useFormSubmit";
 import { omit } from "lodash-es";
 import {
   getAddressInputData,
   getAddressValidationRulesVariables,
+  getAddressFormDataFromAddress,
 } from "@/checkout-storefront/components/AddressForm/utils";
 import { useCheckoutFormValidationTrigger } from "@/checkout-storefront/hooks/useCheckoutFormValidationTrigger";
 import { useCheckout } from "@/checkout-storefront/hooks/useCheckout";
@@ -41,10 +41,13 @@ export const useGuestBillingAddressForm = ({ skipValidation }: GuestBillingAddre
             setChangingBillingCountry(true);
           }
         },
-        parse: ({ languageCode, checkoutId, ...rest }) => ({
+        parse: ({ languageCode, checkoutId, vatId, ...rest }) => ({
           languageCode,
           checkoutId,
-          billingAddress: getAddressInputData(omit(rest, ["channel"])),
+          billingAddress: {
+            ...getAddressInputData(omit(rest, ["channel"])),
+            metadata: [{ key: "vat_id", value: vatId || "" }],
+          },
           validationRules: getAddressValidationRulesVariables({ autoSave: true }),
         }),
         onSuccess: ({ data, formHelpers }) => {
@@ -68,7 +71,10 @@ export const useGuestBillingAddressForm = ({ skipValidation }: GuestBillingAddre
 
   const form = useAutoSaveAddressForm({
     onSubmit,
-    initialValues: getAddressFormDataFromAddress(billingAddress),
+    initialValues: {
+      ...getAddressFormDataFromAddress(billingAddress),
+      vatId: billingAddress?.metadata.find((md) => md.key === "vat_id")?.value,
+    },
     validationSchema,
     scope: "checkoutBillingUpdate",
   });

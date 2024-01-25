@@ -29,10 +29,13 @@ export const useGuestShippingAddressForm = () => {
       () => ({
         scope: "checkoutShippingUpdate",
         onSubmit: checkoutShippingAddressUpdate,
-        parse: ({ languageCode, checkoutId, ...rest }) => ({
+        parse: ({ languageCode, checkoutId, vatId, ...rest }) => ({
           languageCode,
           checkoutId,
-          shippingAddress: getAddressInputData(omit(rest, "channel")),
+          shippingAddress: {
+            ...getAddressInputData(omit(rest, "channel")),
+            metadata: [{ key: "vat_id", value: vatId || "" }],
+          },
           validationRules: getAddressValidationRulesVariables({ autoSave: true }),
         }),
         onSuccess: ({ data, formHelpers }) => {
@@ -48,7 +51,10 @@ export const useGuestShippingAddressForm = () => {
 
   const form = useAutoSaveAddressForm({
     onSubmit,
-    initialValues: getAddressFormDataFromAddress(shippingAddress),
+    initialValues: {
+      ...getAddressFormDataFromAddress(shippingAddress),
+      vatId: shippingAddress?.metadata.find((md) => md.key === "vat_id")?.value,
+    },
     scope: "checkoutShippingUpdate",
   });
 

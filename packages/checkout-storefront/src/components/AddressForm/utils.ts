@@ -38,6 +38,7 @@ export const getEmptyAddress = (): AddressFragment => {
 
   return {
     ...emptyAddressRest,
+    metadata: [],
     id: "",
     country: {
       code: countryCode,
@@ -126,7 +127,12 @@ export const isMatchingAddressData = (
   address?: Partial<AddressFragment> | null,
   addressToMatch?: Partial<AddressFragment> | null
 ) =>
-  isEqual(pick(address, getAllAddressFieldKeys()), pick(addressToMatch, getAllAddressFieldKeys()));
+  isEqual(
+    pick(address, getAllAddressFieldKeys()),
+    pick(addressToMatch, getAllAddressFieldKeys())
+  ) &&
+  address?.metadata?.find((md) => md.key === "vat_id")?.value ===
+    addressToMatch?.metadata?.find((md) => md.key === "vat_id")?.value;
 
 export const getByMatchingAddress =
   (addressToMatch: MightNotExist<Partial<AddressFragment>>) => (address: AddressFragment) =>
@@ -178,6 +184,7 @@ export const getRequiredAddressFields = (requiredFields: AddressField[] = []): A
   ...requiredFields,
   "firstName",
   "lastName",
+  "phone",
 ];
 
 // api doesn't approve of "name" so we replace it with "firstName"

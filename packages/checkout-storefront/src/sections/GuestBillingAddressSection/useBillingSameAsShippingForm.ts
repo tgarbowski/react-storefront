@@ -15,6 +15,7 @@ import { ChangeHandler, useForm } from "@/checkout-storefront/hooks/useForm";
 import { useFormSubmit } from "@/checkout-storefront/hooks/useFormSubmit";
 import { MightNotExist } from "@/checkout-storefront/lib/globalTypes";
 import { useCheckoutUpdateStateActions } from "@/checkout-storefront/state/updateStateStore";
+import { omit } from "lodash-es";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 interface BillingSameAsShippingFormData {
@@ -55,7 +56,15 @@ export const useBillingSameAsShippingForm = (
     parse: ({ languageCode, checkoutId }) => ({
       languageCode,
       checkoutId,
-      billingAddress: getAddressInputDataFromAddress(formBillingAddress),
+      billingAddress: {
+        ...omit(getAddressInputDataFromAddress(formBillingAddress), "vatId"),
+        metadata: [
+          {
+            key: "vat_id",
+            value: formBillingAddress?.metadata.find((md) => md.key === "vat_id")?.value || "",
+          },
+        ],
+      },
       validationRules: getAddressValidationRulesVariables({ autoSave }),
     }),
     onSuccess: ({ data }) => {
